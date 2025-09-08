@@ -32,7 +32,7 @@ PRODUCTION = os.getenv('PRODUCTION', 'False').lower() == 'true'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1"]      # mengizinkan akses dari host lokal
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "cathlin-abigail-soccerholic.pbp.cs.ui.ac.id"]      # mengizinkan akses dari host lokal
 
 
 # Application definition
