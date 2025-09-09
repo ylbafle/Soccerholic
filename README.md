@@ -20,10 +20,16 @@ Tautan PWS: https://cathlin-abigail-soccerholic.pbp.cs.ui.ac.id/
         Setelah login SSO, saya create new project dengan project name 'soccerholic'. Setelah menyimpan credentials yang saya peroleh, saya mengedit raw editor dan menyesuaikan isinya dengan isi dile .env.prod. Setelah itu saya menuju settings.py pada direktori proyek, dan menambahkan URL deployment PWS pada list ALLOWED_HOSTS. Setelah melakukan git add, commit, and push, saya menjalankan project command yang ada di halaman PWS. Setelah memasukan credentials, saya dapat melihat status deployment saya, yaitu Running. Sebagai langkah akhir, saya melakukan git push pws master.
 
 2. Bagan request client ke web aplikasi berbasis Django
-    User akan membuka URL dan browser mengirim request ke server Django. Django akan melakukan pengecekan pola URL melalui berkas urls.py (pada direktori main). Jika URL sesuai, Django akan memanggil fungsi show_main dari views.py. Kemudian, views.py yang terdapat fungsi show_main akan memanggil main.html atau template. main.html akan menerima context dari views.py dan mengganti placeholder {{  }} dengan value yang sesuai dan menghasilkan HTML final yang akan dirender dan dikirim kembali ke browser. Browser menampilkan halaman ke pengguna.
+    Gambar bagan: ![alt text](routing.jpg)
+    a. Client request -> browser mengirim request ke server Django. 
+    b. Django akan melakukan pengecekan pola URL melalui berkas urls.py (pada direktori soccerholic). 
+    c. Jika URL sesuai, Django akan meneruskan request ke urls.py pada direktori main dan memanggil fungsi show_main dari views.py. Jika tidak sesuai, Django akan mengembalikan 404 Not Found.
+    c. Kemudian, views.py yang terdapat fungsi show_main akan memanggil main.html atau template. 
+    d. main.html akan menerima context dari views.py dan mengganti placeholder {{  }} dengan value yang sesuai dan menghasilkan HTML final yang akan dirender dan dikirim kembali ke browser. 
+    e. Browser menampilkan halaman ke pengguna.
 
 3. Peran settings.py pada proyek Django
-    settings.py berperan penting dalam setiap proyek Django. Hal ni karena settings.py menjadi pusat pengaturan untuk proyek yang menghubungkan kode aplikasi dengan database dan server. Sebagai pusta konfigurasi, settings.py juga mengatur bagaimana aplikasi dijalankan melalui pengaturan penting, seperti aplikasi apa saja yang terdaftar (INSTALLED_APPS), akses (ALLOWED_HOSTS), pengaturan database (pada proyek ini saya menggunakan PostgreSQL seperti arahan tutorial), dan lainnya.
+    settings.py berperan penting dalam setiap proyek Django. Hal ini karena settings.py menjadi pusat pengaturan untuk proyek yang menghubungkan kode aplikasi dengan database dan server. Sebagai pusat konfigurasi, settings.py juga mengatur bagaimana aplikasi dijalankan melalui pengaturan penting, seperti aplikasi apa saja yang terdaftar (INSTALLED_APPS), akses (ALLOWED_HOSTS), pengaturan database (pada proyek ini saya menggunakan PostgreSQL seperti arahan tutorial), dan lainnya.
 
 4. Cara kerja migrasi database di Django
     Migrasi database memastikan database dan model pada kode (models.py) sinkron. Setelah kita melakukan perubahan pada models.py, kita makemigration (command python manage.py makemigrations) untuk memastikan perubahan tercatat oleh Django (makemigration hanya mencatat). Kemudian, dilakukan migrate (command python manage.py migrate) untuk menjalankan file migrasi yang telah dicatat ke database.
