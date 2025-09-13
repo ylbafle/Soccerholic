@@ -1,3 +1,6 @@
+ {% extends 'base.html' %}
+ {% block content %}
+
 <h1>Welcome to Soccerholic</h1>
 
 <h5>Nama aplikasi: </h5>
@@ -6,3 +9,12 @@
 <p>{{ nama }}<p>
 <h5>Kelas: </h5>
 <p>{{ kelas }}</p>
+
+<!-- menampilkan data product dan tombol add product -->
+<a href = "{% url 'main:create_product' %}">
+    <button> + add product </button>
+</a>
+
+<hr>
+
+{% endblock content %}
