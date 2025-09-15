@@ -1,5 +1,26 @@
 Tautan PWS: https://cathlin-abigail-soccerholic.pbp.cs.ui.ac.id/
 
+---------------------------------- TUGAS 3 ----------------------------------
+1. Membuah tambahan 4 fungsi views untuk melihat objek yang sudah ditambahkan
+    Keempat fungsi berfungsi untuk mengambil data dan show data tersebut ke user (mengirim semua objek product dalam format XML atau JSON).
+    show_xml(request) dan show+json(request) memiliki mekanisme yang serupa. awalnya Product.objects.all() mengambil semua data. Kedmudian dengan serializers, data Product yang tadinya data Python diubah menjadi string XML atau JSON melalui HttpResponse agar data bisa ditampilkan.
+    Lalu, untuk show_xml_by_id(request,id) dan show_json_by_id(request, id) juga dua hal yang serupa. ID akan dipassing melalui parameter dan objek akan 'diambil' dengan id, yaitu dengan command Product.objects.get(pk=id). Try dan except digunakan untuk catch error jika product tidak ditemukan. Jika objek berhasil ditemukan, objek akan diserialisasi menjadi XML atau JSON dan direturn sebagai HttpResponse.
+
+2. Routing untuk masing-masing views
+    a. path('xml/', show_xml, name='show_xml'),
+    b. path('json/', show_json, name='show_json'),
+    c. path('xml/<str:product_id>/', show_xml_by_id, name='show_xml_by_id'),
+    d. path('json/<str:product_id>/', show_json_by_id, name='show_json_by_id'),
+
+
+Dokumentasi Postman:
+![alt text](image.png) -> xml
+![alt text](image-1.png) -> json
+![alt text](image-3.png) -> xml by id
+![alt text](image-2.png) -> json by id
+
+
+----------------------------------- TUGAS 2 --------------------------------------
 1. Penjelasan bagaimana saya mengimplementasikan checklist per checklist:
     a. Membuat proyek Django baru
         Proyek Django (soccerholic) saya berada pada direktori utama (Soccerholic). Sebelumnya, dilakukan instalasi dependencies (requirements.txt) yang berisi modul-modul yang diperlukan untuk menjalankan konsep MVT dan membuat proyek kali ini. Setelah berhasil mengunduh modul pada dependencies, proyek Django dibuat dengan command django-admin startproject soccerholic . yang akan membuat folder 'soccerholic' yang berisi file project Django secara otomatis (settings, manage, dll). Kemudian, dilanjutkan dengan konfigurasi environment variables dan proyek.
