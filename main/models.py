@@ -3,6 +3,10 @@ from django.db import models
 
 class Product(models.Model):
     CATEGORY_CHOICES = [
+        ('ball', 'Ball'),
+        ('jersey', 'Jersey'),
+        ('keychains', 'Keychains'),
+        ('shoe', 'Shoe')
     ]
 
     name = models.CharField(max_length=255)                 # nama item

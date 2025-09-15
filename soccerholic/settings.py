@@ -34,6 +34,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "cathlin-abigail-soccerholic.pbp.cs.ui.ac.id"]      # mengizinkan akses dari host lokal
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://cathlin-abigail-soccerholic.pbp.cs.ui.ac.id"
+]
 
 # Application definition
 
