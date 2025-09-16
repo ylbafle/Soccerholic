@@ -25,7 +25,16 @@ Tautan PWS: https://cathlin-abigail-soccerholic.pbp.cs.ui.ac.id/
 
 4. Menjawab pertanyaan:
     a. Jelaskan mengapa kita memerlukan data delivery dalam pengimplementasian sebuah platform?
-        Karena pada dasarnya, terjadi banyak pertukaran data melalui platform sehingga data delivery memungkinkan pertukaran data terjadi. Pada project ini kita menggunakan JSON dan XML yang melalui serializers kita dapat mengubah objek python dari database menjadi format standar. Kita juga perlu untuk
+        Karena pada dasarnya, terjadi banyak pertukaran data melalui platform sehingga data delivery memungkinkan pertukaran data terjadi. Pada project ini kita menggunakan JSON dan XML yang melalui serializers kita dapat mengubah objek python dari database menjadi format standar. 
+    b. XML atau JSJON?
+        Menurut saya pribadi, saya lebih memilih untuk menggunakan JSON karena penulisan atau syntaxnya lebih simple (seperti dictionary pada python) dan sederhana dibanding dengan XML yang cenderung seperti HTML, memiliki opening tag dan closing tag. Mengutip dari aws.amazon.com, JSON seringkali menjadi pilihan terbaik karena JSON didesain untuk pertukaran data dan menyediakan format yang lebih sederhana dan ringkas. JSON juga meningkatkan performa kecepatan dan komunikasi, serta memiliki ukuran file yang lebih kecil dan transmisi data yang lebih cepat.
+    c. Fungsi dari method is_valid()
+        is_valid() method melakukan pengecekan untuk validation errors untuk data yang diinput oleh pengguna sebelum disimpan ke database. Kita memerlukan is_valid() untuk mencegah terjadinya kesalahan data, seperti data tidak lengkap atau format yang salah.
+    d. Pentingnya csrf_token
+        Dengan menggunakan csrf_token saat membuat form Django, setiap form yang dikirimkan akan secara otomatis disertai dengan token csrf yang harus diverifikasi oleh server sebelum permintaan diproses dan memastikan permintaan tersebut sah dari website yang kita terima.
+        Tanpa token csrf, penyerang dapat mengirim request yang valid ke server pengguna (karena tidak ada verifikasi token) tanpa sepengetahuan pengguna sehingga dapat menjadi celah bagi penyerang untuk melakukan tindakan kriminal, seperti pencurian data atau transfer uang.
+
+5. feeback untuk asdos = -
 
 Dokumentasi Postman:
 ![alt text](image.png) -> xml
