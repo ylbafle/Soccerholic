@@ -9,7 +9,6 @@ class Product(models.Model):
         ('shoe', 'Shoe')
     ]
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)                 # nama item
     price = models.IntegerField()                           # harga item
     description = models.TextField()                        # deskripsi item
