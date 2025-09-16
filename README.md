@@ -3,15 +3,29 @@ Tautan PWS: https://cathlin-abigail-soccerholic.pbp.cs.ui.ac.id/
 ---------------------------------- TUGAS 3 ----------------------------------
 1. Membuah tambahan 4 fungsi views untuk melihat objek yang sudah ditambahkan
     Keempat fungsi berfungsi untuk mengambil data dan show data tersebut ke user (mengirim semua objek product dalam format XML atau JSON).
-    show_xml(request) dan show+json(request) memiliki mekanisme yang serupa. awalnya Product.objects.all() mengambil semua data. Kedmudian dengan serializers, data Product yang tadinya data Python diubah menjadi string XML atau JSON melalui HttpResponse agar data bisa ditampilkan.
-    Lalu, untuk show_xml_by_id(request,id) dan show_json_by_id(request, id) juga dua hal yang serupa. ID akan dipassing melalui parameter dan objek akan 'diambil' dengan id, yaitu dengan command Product.objects.get(pk=id). Try dan except digunakan untuk catch error jika product tidak ditemukan. Jika objek berhasil ditemukan, objek akan diserialisasi menjadi XML atau JSON dan direturn sebagai HttpResponse.
+    show_xml(request) dan show+json(request) memiliki mekanisme yang serupa. awalnya Product.objects.all() mengambil semua data. Kedmudian dengan serializers, data Product yang tadinya data Python diubah menjadi string XML atau JSON melalui HttpResponse dengan value content_type "application/json" atau "application/xml" agar data bisa ditampilkan sesuai yang diinginkan.
+    Lalu, untuk show_xml_by_id(request,id) dan show_json_by_id(request, id) juga dua hal yang serupa. ID akan dipassing melalui parameter dan objek akan 'diambil' dengan id, yaitu dengan command Product.objects.get(pk=id). 
+    Try dan except digunakan untuk catch error jika product tidak ditemukan. Jika objek berhasil ditemukan, objek akan diserialisasi menjadi XML atau JSON dan direturn sebagai HttpResponse.
 
 2. Routing untuk masing-masing views
-    a. path('xml/', show_xml, name='show_xml'),
-    b. path('json/', show_json, name='show_json'),
+    a. path('xml/', show_xml, name='show_xml')
+        membuat path untuk route xml dan menunjukan bahwa yang ingin ditampilkan adalah tampilan seluruh data dalam bentuk xml, lalu shows_xml (param view) dari views.py akan dipanggil oleh Django untk menerima request dari perngguna. Kemudian, name memudahkan kita dalam menuliskan kode antar file.
+    b. path('json/', show_json, name='show_json')
+        membuat path untuk route json dan menunjukan bahwa yang ingin ditampilkan adalah tampilan dari seluruh data dalam bentuk json, shpws_json dari views.py akan dipanggin oleh Django untuk memproses request pengguna dan menampilkan tampilan yang sesuai. Name memudahkan dalam menuliskan kode antar file.
     c. path('xml/<str:product_id>/', show_xml_by_id, name='show_xml_by_id'),
+        membuat path untuk xml dengan /product_id dan memanggil show_xml_by_id dari views.py jika path request sesuai. Path dengan konfigurasi xml/product_id akan dinamakan show_xml_by_id agar mudah digunakan di antar file
     d. path('json/<str:product_id>/', show_json_by_id, name='show_json_by_id'),
+        membuat path untuk json dengan /product_id dan memanggil show_json_by_id dari views.py jika path request sesuai. Path dengan konfigurasi jsonp/roduct_id akan dinamakan show_json_by_id agar mudah digunakan di antar file
 
+3. Membuat halaman yang menampilkan data objek model yang memiliki tombol "Add" yang akan redirect ke halaman form dan tombol "Detail" untuk menampilkan halaman detail objek
+    Pertama saya membuat file forms.py sebagai struktur forms untuk menerima data product baru dengan fields sesuai dengan fields pada atribut Product di models.py.
+    Lalu, saya buat urls di urls.pu untuk connect request urls.py user ke fungsi add_product di views.py, disini path diberi nama add_product untuk memudahkan pemanggilan kedepannya.
+    Untuk tampilan button "add" dan "detail" ada pada main.html sebagai tampilan muka di web browser nantinya. Tombol "Detail" saya ubah menjadi "Read More". Keduanya diletakan di main.html sebagai hyperlink (dengan syntax <a href = "{% url '...' %}"> </a>) yang akan mengarah ke file yang dituju jika diklik, misal untuk button Add Product akan mengarah ke add_product.html.
+    add_product.html akan menjadi template yang bertanggung jawab untuk menampilkan halaman form (struktur dari forms.py) dan product_details.html akan menapilkan halaman detail product.
+
+4. Menjawab pertanyaan:
+    a. Jelaskan mengapa kita memerlukan data delivery dalam pengimplementasian sebuah platform?
+        Karena pada dasarnya, terjadi banyak pertukaran data melalui platform sehingga data delivery memungkinkan pertukaran data terjadi. Pada project ini kita menggunakan JSON dan XML yang melalui serializers kita dapat mengubah objek python dari database menjadi format standar. Kita juga perlu untuk
 
 Dokumentasi Postman:
 ![alt text](image.png) -> xml

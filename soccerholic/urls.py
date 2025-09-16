@@ -20,5 +20,5 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('main.urls')),
+    path('', include('main.urls')),     # include() untuk mewakilkan tugas routing dari level project ke level aplikasi (main)
 ]
