@@ -17,4 +17,11 @@
 
 <p>{{ product.description }}</p>
 
+<!-- menampilkan nama penjual -->
+{% if product.user %}
+    <p>Author: {{ product.user.username }}</p>
+{% else %}
+    <p>Author: Anonymous</p>
+{% endif %}
+
 {% endblock content %}

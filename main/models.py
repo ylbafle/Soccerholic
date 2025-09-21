@@ -1,5 +1,6 @@
 import uuid
 from django.db import models
+from django.contrib.auth.models import User
 
 class Product(models.Model):
     CATEGORY_CHOICES = [
@@ -9,6 +10,9 @@ class Product(models.Model):
         ('shoe', 'Shoe')
     ]
     
+    # menghubungkan satu product dengan satu user (many-to-one relationship)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)                 # nama item
     price = models.IntegerField()                           # harga item
@@ -16,6 +20,9 @@ class Product(models.Model):
     thumbnail = models.URLField(blank=True, null=True)      # gambar item
     category =  models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='none')   # item category
     is_featured = models.BooleanField(default=False)        # status unggahan item
+
+class Car(models.Model):
+    name = models.CharField(max_length=255)
+    brand = models.CharField(max_length=255)
+    stock = models.IntegerField()
     
-    def __str__(self):
-        return self.name  # still unsure
