@@ -20,9 +20,3 @@ class Product(models.Model):
     thumbnail = models.URLField(blank=True, null=True)      # gambar item
     category =  models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='none')   # item category
     is_featured = models.BooleanField(default=False)        # status unggahan item
-
-class Car(models.Model):
-    name = models.CharField(max_length=255)
-    brand = models.CharField(max_length=255)
-    stock = models.IntegerField()
-    

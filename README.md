@@ -1,4 +1,54 @@
 Tautan PWS: https://cathlin-abigail-soccerholic.pbp.cs.ui.ac.id/
+---------------------------------- TUGAS 3 ----------------------------------
+1. Apa itu Django AuthenticationForm?
+    Django AuthenticationForm adalah kelas untuk membuat formulir dengan kemampuan untuk memvalidasi kredensial pengguna (melakukan proses autentikasi), seperti pengecek apakah username dan password user sudah sesuai dan apakah akun tersebut terdaftar di database.
+
+    Kelebihan: dengan menggunakan AuthenticationForm, ktia tidak perlu membuat format form dari awal dan class ini juga bisa langsung memvalidasi username dan password pengguna. Form juga dsudah dilengkapi dengan mekanisme csrf_token yang dapat melindungi data pengguna.
+    Kekurangan: hanya mendukung login menggunakan username dan password. Jika ingiin login dengan email atau cara lain, maka harus extend atau override method dari class AuthenticationForm.
+
+2. Apa perbedaan autentikasi dan otorisasi?
+    Autentikasi adalah suatu proses pengecekan kredensial, contoh pengecekan password pengguna saat login. Sedangkan, otorisasi berarti proses mengatur akses bagi pengguna (mengolah perizinan), aktivitas apa saja yang dapat dilakukan oleh pengguna atau yang tidak boleh dilakukan.
+    Bagaimana Django menerapkan keduanya?
+    Untuk Tugas 3, Django menerapkan autentikasi dengan menggunakan class AuthenticationForm yang akan memvalidasi kredensial pengguna saat login. Autentikasi dilakukan dengan menggunakan method is_valid().
+    Untuk konsep otorisasi sendiri diterapkan pada class views.py dengan mengimport login_required melalui built-in class django.contrib.auth dan menerapkan decorator pada beberapa functions. Decorator ini yang akan mengatur apakah user bisa mengakses suatu halaman atau tidak. Contoh untuk halaman utama (function show_main pada views.py) hanya dapat diakses oleh pengguna yang login karena functions diberi decorator login_required(login_url='/login).
+
+3. Kelebihan dan kekurangan session dan cookies:
+    a. Cookies
+        Kelebihan: cookies disimpan di browser client sehingga tidak membebani server dan dapat bertahan walau browser ditutup. Cookie mudah digunakan untuk menyimpan preferensi user (untuk personalisasi tampilan).
+        Kekurangan: keamanan lebih rendah karena data disimpan di client sehingga bisa dimodifikasi user (disimpan dalam bentuk teks yang bisa diedit). Cookie rentan terhadap serangan cookie theft jika tidak diamankan. Sifat cookie yang rawan dimanipulasi inti membuat cookies cocok untuk data non-sensitif.
+    b. Session
+        Kelebihan: disimapn di server (hanya session ID yang dikirim ke client via cookie). Session lebih aman dibanding cookie dan dapat menyimpan data yang lebih besar (tidak terbats 4 KB seperti cookies).
+        Kekurangan: membebani server karena butuh penyimpanan khusus seperti memori, database, dan cache. Session juga bisa hilang jika server restart atau expired setelah user logout.
+
+4. Apakah cookies aman secara default?
+    Cookies tidak sepenuhnya aman karena bisa menjadi celah keamanan jika tidak dikonfiguarsi dengan benar. Beberapa serangan yang dapat terjadi adalah XSS dimana attacker bisa mencuri cookies melalui script, session hijacking dimana attacker mencuri session ID dari cookie dan menyamar sebagai user, serta CSRF dimana attacker memanfaatkan cookies otomatis terkirim di request.
+    
+    Django menangani hal ini dengan memiliki fitur keamanan cookie Django. Saat menyetal cookie, Django menyediakan parameter untuk keamanan. Contohnya, max_age atau expires untuk menentukan umur cookie, kemudian httponly=Truemencegaj akses cookie lewat JavaScript (hanya melalui HTTP). Kemudian kita juga bisa konfigurasi settings.py untuk pengaturan lanjutan terkait keamanan cookie. Contohnya SESSION_COOKIE_SECURE = True → cookie session hanya lewat HTTPS.
+
+5. Cara mengimplementasikan checklist:
+    a. mengimplementasikan fungsi registrasi, login, logout
+        - Registrasi
+            Tambahkan method register pada views.py untuk menghasilkan formulir registrasi secara otomatis dan menghasilkan akun pengguna ketika data disubmit dari form -> method ini menggunakan UserCreationForm (untuk pengguna baru) dengan method request POST untuk mengirim data ke database. Method ini juga melakukan validasi form (methos is_valid()).
+            Kemudian dilanjutkan dengan membuat register.html untuk templates yang akan menampilkan input form untuk pengguna.
+            Setelah membuat template, lanjutkan dengan konfigurasi URL di urls.py dengan menambahkan path baru, yaitu path register.
+        - Login
+            Tambahkan method login_user pada views.py. Method ini akan mengautentikasi pengguna yang ingin login. Method ini menggunakan AuthenticationForm untuk melakukan autentikasi form hasil input user. Pada method ini, jika pengguna mengirimkan permintaan login, maka akan dilakukan validasi melalui method is_valid() dan fungsi logn(request, user) akan membuat session untuk pengguna yang berhasil login.
+            Kemudian, buat login.html sebagai template yang akan menampilkan input form untuk login pengguna.
+            Setelah membuat template, lanjutkan dengan konfigurasi URL di urls.py dengan menambahkan path baru, yaitu path login.
+        - Logout
+            Dengan flow yang sama seperti membuat fungsi registrasi dan login, fungsi logout juga dibuat di views.py. Sebelumnya, kita pastika kita sudah mengimport logout, authenticate, dan login dari django.contrib.auth. Fungsi logout dibuat dengan method logout(request) yang sebelumnya telah diimport. Setelah logout, maka user diarahkan ke halaman login.
+            Kemudian kita menambahkan path baru untuk logout pada urls.py.
+            Setelah itu kita menambahkan tombol logout di main.html dengan bantuan hyperlink yang akan memanggil url logout.
+    b. Menghubungkan model Product dengan User
+        Menghubungkan model dengan user yang sedang login bertujuan agar pengguna yang sedang logn dapat menambahkan produk yang hanya dapat dilihat oleh dirinya sendiri.
+        Langkah-langkah:
+            - Pertama, import User dari django.contrib.auth.models pada models.py
+            - Tambahkan artribut user pada class Product (user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)). Penambahan ini bertujuan untuk menghubungkan satu model Product dengan satu user melalui sebuah relationship. null=True memungkinkan Product yang sudah ada tetap valid tanpa harus memiliki user (karena kita pernah menambahkan product sebelumnya). on_delete=models.CASCADE berarti jika user dihapus, maka semua product milik user juga akan ikut terhapus.
+            - Membuat migrasi model
+            - Mengubah baris kdde pada fungsi add_product pada views.py. Penambahan kode ini bertujuan untuk assign user yang sedang login (melaluui user = request.user) sebagai user yang terasosiasi dengan produk yang sedang dibuat sehingga setiap objek yang dibuat terhubung dengan pengguna yang membuatnya.
+    c. Menampilkan detail informasi pengguna yang sedang logged in dan menerapkan cookies last_login:
+        Tampilan detail informasi username pengguna yang sedang login dan data last_login melalui cookies diatur pada views.py. Kita akan mengubah beberapa baris kode pada fungsi show_main. Untuk bagian 'name' kita ubah menjadi 'name' = request.user.username -> nama akan sesuai dengan user yang sedang login.
+        Kemudian, tambahkan 'last_login' = request.COOKIES.get('last_login','Never'). Baris kode ii akan mengambil nilai cookie degan lama last_login, jika ada maka nilainya akan dipakai. Jika belum ada, maka nilainya 'Never'. last_login diset di vies.py pada fungsi login_user yang menyimpan data login user.
 
 ---------------------------------- TUGAS 3 ----------------------------------
 1. Membuah tambahan 4 fungsi views untuk melihat objek yang sudah ditambahkan

@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from main.forms import CarForm, ProductForm
-from main.models import Car, Product
+from main.models import Product
 from django.http import HttpResponse
 from django.core import serializers
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
@@ -33,14 +33,15 @@ def show_main(request):
 
     return render(request, "main.html", context)
 
-def create_car(request):
-    if form.is_valid() and request.method == "POST":
-        form = CarForm()
-        car = Car.objects.create(name=form.cleaned_data["name"], brand=form.cleaned_data["brand"], stock=form.cleaned_data["stock"])
-        return render(request, "main.html")
-    else:
-        form = CarForm()
-        return render(request, "create_car.html", {"form" : form})
+# demo tugas 3
+# def create_car(request):
+#     if form.is_valid() and request.method == "POST":
+#         form = CarForm()
+#         car = Car.objects.create(name=form.cleaned_data["name"], brand=form.cleaned_data["brand"], stock=form.cleaned_data["stock"])
+#         return render(request, "main.html")
+#     else:
+#         form = CarForm()
+#         return render(request, "create_car.html", {"form" : form})
 
 
 # fungsi untuk generate form untuk menambahkan data produk
