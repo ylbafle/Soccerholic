@@ -25,7 +25,7 @@ def show_main(request):
     # context berisi data yang akan dikirimkan ke tampilan
     context = {
         'nama_aplikasi': 'Soccerholic',
-        'nama': 'Cathlin Abigail',
+        'nama': request.user.username,
         'kelas' : 'PBP A',
         'product_list': product_list,
         'last_login': request.COOKIES.get('last_login', 'Never'), # nilai default jika cookie last_login tidak ada adalah Never
