@@ -1,0 +1,79 @@
+{% load static %}
+<article class="bg-white rounded-lg border border-gray-200 hover:shadow-lg transition-shadow duration-300 overflow-hidden">
+  <!-- Thumbnail -->
+  <div class="aspect-[16/9] relative">
+    {% if product.thumbnail %}
+      <a href="{% url 'main:show_product' product.id %}">
+        <div class="p-2"> 
+          <img class="w-full h-40 object-cover rounded-lg" src="{{ product.thumbnail }}" alt="Thumbnail for {{ product.name }}">
+        </div>
+      </a>
+    {% else %}
+      <div class="w-full h-48 bg-gray-200 flex items-center justify-center">
+         <span class="text-gray-400">No Image</span>
+      </div>
+    {% endif %}
+
+    <!-- Category Badge -->
+    <div class="absolute top-3 left-3">
+      <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-[#86AB89] text-white">
+        {{ product.get_category_display }}
+      </span>
+    </div>
+
+    <!-- Status Badges -->
+    <div class="absolute top-3 right-3 flex space-x-2">
+      {% if product.is_featured %}
+        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+          Featured
+        </span>
+      {% endif %}
+      {% if product.stock == 1 %}
+        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-[#86AB89]-100 text-[#86AB89]-800">
+          Last Stock!
+        </span>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="p-5">
+    <div class="flex items-center text-sm text-gray-500 mb-3">
+      <span>{{ product.user }}</span>
+    </div>
+
+    <h3 class="text-lg font-semibold text-gray-900 mb-3 line-clamp-2 leading-tight">
+      <a href="{% url 'main:show_product' product.id %}" class="hover:text-[#86AB89] transition-colors">
+        {{ product.name }}
+      </a>
+    </h3>
+
+    <p class="text-gray text-sm leading-relaxed line-clamp-3 mb-4">
+      {{ product.content|truncatewords:20 }}
+    </p>
+
+    <!-- Action Buttons -->
+    {% if user.is_authenticated and product.user == user %}
+      <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+        <div class="flex space-x-2">
+          <a href="{% url 'main:edit_product' product.id %}" class="text-gray hover:text-gray-700 text-sm transition-colors">
+            Edit
+          </a>
+          <a href="{% url 'main:delete_product' product.id %}" class="text-[#86AB89] hover:text-[#86AB89]-700 text-sm transition-colors">
+            Delete
+          </a>
+        </div>
+      </div>
+    {% else %}
+    <!-- space x-3: ada consistent horizontal space between dua button -->
+      <div class="flex items-center space-x-3">
+      <button type="button" class="w-full border border-[#86AB89] text-[#86AB89] hover:bg-[#86AB89] hover:text-white font-medium text-sm py-2 px-4 rounded-full transition-colors">
+        Add to Cart
+      </button>
+      <button type="button" class="w-full bg-[#86AB89] hover:bg-opacity-80 text-white font-medium text-sm py-2 px-4 rounded-full transition-colors">
+        Buy Now
+      </button>
+    </div>
+  {% endif %}
+  </div>
+</article>

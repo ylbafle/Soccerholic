@@ -5,7 +5,7 @@ from django import forms
 class ProductForm(ModelForm):
     class Meta:
         model = Product      # isi dari form akan menjadi objek produk
-        fields = ["name", "price", "description", "thumbnail", "category", "is_featured"]
+        fields = ["name", "stock", "price", "description", "thumbnail", "category", "is_featured"]
 
 class CarForm(forms.Form):
     name = forms.CharField(max_length=255)

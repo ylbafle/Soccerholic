@@ -1,4 +1,47 @@
 Tautan PWS: https://cathlin-abigail-soccerholic.pbp.cs.ui.ac.id/
+---------------------------------- TUGAS 5 ----------------------------------
+1. Jika terdapat beberapa CSS selector untuk suatu elemen HTML, jelaskan urutan prioritas pengambilan CSS selector tersebut!
+    a. Inline style: langsung id dalam tag HTML dengan atribut style
+    b. External dan internal style: external style, kita membuat kode css di file terpisah
+    c. Browser default: stylesheet bawaan browser
+
+2. Mengapa responsive design menjadi konsep yang penting dalam pengembangan aplikasi web? Berikan contoh aplikasi yang sudah dan belum menerapkan responsive design, serta jelaskan mengapa!
+    Responsive design penting karena umumnya pengguna mengakses internet itu melalui perangkat mobile, tapi tidak sedikit juga yang mengakses melalui desktop. Jadi, tanpa desain yang responsif, pengguna hp harus terus melakukan scroll horizontel (since desktop screen is wider than hp).
+    Contoh reponsive: bbc.com
+    Contoh belum responsive: berkshirehataway.com
+
+3. Jelaskan perbedaan antara margin, border, dan padding, serta cara untuk mengimplementasikan ketiga hal tersebut!
+    Margin: untuk mengosongkan area di sekitar border (di luar batas) dan bisa untuk perataan atau alignment juga
+    Border: garis tepi untuk padding
+    Padding: mengosongkan area di sekitar content (di dalam batas, jarak content dengan border atau garis tepi) sehingga antar content tidak berdekatan
+    Contoh penggunaan:
+    <style> 
+        div { 
+        margin: 50 px;
+        border: 1px solid black; 
+        padding-top: 50px; 
+        padding-right: 30px; 
+        padding-bottom: 50px; 
+        padding-left: 80px; 
+        } 
+    </style>
+
+3. Jelaskan konsep flex box dan grid layout beserta kegunaannya!
+    Flexbox memungkinkan kita untuk membuat layout yang flexible dan responsif. Kita dapat menggunakan syntax display: flex untuk membuat semya elemen anak menjadi flex item. Flex container ini akan mengatur distribusi ruang antar item di dalamnya. Kegunaan:meratakan komponen di kiri atau kanan, menjajarkan beberapa button secara horizontal atau vertika, memusatkan judul dan teks di card, dan membuat label dan input field tabel rapi.
+    Grid adalah sistem layout yang berbasis grid. Jadi kalau kita edit dengan grid itu seakan halaman kita menjadi baris dan kolom dan kita menempatkan elemen di "sel" grid yang kita inginkan. Kegunaan grid mirip dengan flexbox, namun grid dapat digunakan untuk hal yang lebih komples, misal tampilaln kalender, grid membuat hari-hari tersusun rapi dalam baris dan kolom
+
+4. Implementasi Checklist
+    a. Implementasi delete product:
+        Tambahkan method delete_product pada views.py untuk mmenghandle logic delete product mengugnakan method delete() untuk models.
+        Kemudian dilanjutkan dengan membuat button delete di card_product.html untuk template html yang akan membuat product terhapus (memanggil delete_prpoduct di views.py).
+        Setelah membuat template, lanjutkan dengan konfigurasi URL di urls.py dengan menambahkan path baru, yaitu path delete_product.
+    b. Implementasi edit:
+        Tambahkan method edit_product pada views.py untuk mmenghandle logic edit product. Di dalamnya terdapat form = ProductForm(request.POST or None, instance=product) yang memungkinkan form terisi dengan semua data dari objek produk yang telah kita fill sebelumnya sehingga kita bisa melihat data lama dan edit.
+        Kemudian dilanjutkan dengan membuat button edit di card_product.html untuk template html yang akan membuat product terhapus (memanggil edit_product di views.py).
+        Setelah membuat template, lanjutkan dengan konfigurasi URL di urls.py dengan menambahkan path baru, yaitu path edit_product.
+    c. Kustomisai halaman
+        Kustomisasi halaman dilakuakn dengan menggunakan tailwind, kita tinggal menambahkan atau kustom atribut yang kita ingin. Misalnya mengubah warna text.
+
 ---------------------------------- TUGAS 4 ----------------------------------
 1. Apa itu Django AuthenticationForm?
     Django AuthenticationForm adalah kelas untuk membuat formulir dengan kemampuan untuk memvalidasi kredensial pengguna (melakukan proses autentikasi), seperti pengecek apakah username dan password user sudah sesuai dan apakah akun tersebut terdaftar di database.

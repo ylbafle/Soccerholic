@@ -33,17 +33,6 @@ def show_main(request):
 
     return render(request, "main.html", context)
 
-# demo tugas 3
-# def create_car(request):
-#     if form.is_valid() and request.method == "POST":
-#         form = CarForm()
-#         car = Car.objects.create(name=form.cleaned_data["name"], brand=form.cleaned_data["brand"], stock=form.cleaned_data["stock"])
-#         return render(request, "main.html")
-#     else:
-#         form = CarForm()
-#         return render(request, "create_car.html", {"form" : form})
-
-
 # fungsi untuk generate form untuk menambahkan data produk
 def add_product(request):
     form = ProductForm(request.POST or None)
@@ -57,7 +46,7 @@ def add_product(request):
     context = {'form': form}
     return render(request, "add_product.html", context)
 
-@login_required(login_url='/login')   
+@login_required()   
 def show_product(request, id):
     product = get_object_or_404(Product, pk=id)
 
@@ -66,6 +55,25 @@ def show_product(request, id):
     }
 
     return render(request, "product_details.html", context)
+
+def edit_product(request, id):
+    product = get_object_or_404(Product, pk=id)
+    form = ProductForm(request.POST or None, instance=product)
+
+    if form.is_valid() and request.method == 'POST':
+        form.save()
+        return redirect('main:show_main')
+
+    context = {
+        'form': form
+    }
+
+    return render(request, "edit_product.html", context)
+
+def delete_product(request, id):
+    product = get_object_or_404(Product, pk=id)
+    product.delete()
+    return HttpResponseRedirect(reverse('main:show_main'))
 
 def show_xml(request):
     product_list = Product.objects.all()
@@ -135,3 +143,14 @@ def logout_user(request):
 #    employee1 = Employee.objects.create(name = "cathlin", age = 19, persona = "-")
 
 #    return render(request, "main.html", {"name": employee1.name, "age": employee1.age, "persona": employee1.persona})
+
+# demo tugas 3
+# def create_car(request):
+#     if form.is_valid() and request.method == "POST":
+#         form = CarForm()
+#         car = Car.objects.create(name=form.cleaned_data["name"], brand=form.cleaned_data["brand"], stock=form.cleaned_data["stock"])
+#         return render(request, "main.html")
+#     else:
+#         form = CarForm()
+#         return render(request, "create_car.html", {"form" : form})
+
