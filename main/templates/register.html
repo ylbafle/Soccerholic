@@ -14,32 +14,9 @@
         <p class="text-gray-500">Create your Soccerholic account</p>
       </div>
 
-      <!-- Form Errors Display -->
-      {% if form.non_field_errors %}
-        <div class="mb-6">
-          {% for error in form.non_field_errors %}
-            <div class="px-4 py-3 rounded text-sm border bg-red-50 border-red-200 text-red-700">
-              {{ error }}
-            </div>
-          {% endfor %}
-        </div>
-      {% endif %}
+      <div id="register-error" class="hidden px-4 py-3 mb-4 rounded-md text-sm border bg-red-50 border-red-200 text-red-700"></div>
 
-      {% if form.errors %}
-        <div class="mb-6">
-          {% for field, errors in form.errors.items %}
-            {% if field != '__all__' %}
-              {% for error in errors %}
-                <div class="px-4 py-3 rounded text-sm border bg-red-50 border-red-200 text-red-700 mb-2">
-                  <strong>{{ field|title }}:</strong> {{ error }}
-                </div>
-              {% endfor %}
-            {% endif %}
-          {% endfor %}
-        </div>
-      {% endif %}
-
-      <form method="POST" action="" class="space-y-5">
+      <form id="registerForm" method="POST" class="space-y-5">
         {% csrf_token %}
         
         <div>
@@ -77,7 +54,7 @@
 
         <button 
           type="submit" 
-          class="w-full bg-red-600 text-white font-medium py-3 px-4 rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition duration-200">
+          class="w-full bg-[#86AB89] text-white font-medium py-3 px-4 rounded hover:bg-[##547457] focus:outline-none transition duration-200">
           Create Account
         </button>
       </form>
@@ -106,7 +83,7 @@
       <div class="mt-6 text-center">
         <p class="text-gray-500 text-sm">
           Already have an account? 
-          <a href="{% url 'main:login' %}" class="text-red-600 hover:text-red-700 font-medium">
+          <a href="{% url 'main:login' %}" class="text-[#86AB89] hover:underline font-medium">
             Sign In
           </a>
         </p>
@@ -115,4 +92,77 @@
     </div>
   </div>
 </div>
+
+<script>
+  // get cookie untuk ambil csrf token dari cookie
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // ambil token dan simpan di variabel dulu
+    const csrftoken = getCookie('csrftoken');
+
+    const form = document.getElementById('registerForm');
+    const errorDiv = document.getElementById('register-error');
+
+    // add event listener yang akan dipanggil saat form di submit
+    form.addEventListener('submit', async function(e) {
+      // prevent dia refresh halaman
+        e.preventDefault();
+
+        // collect data dari form
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+
+        // validasi password di frontend untuk feedback
+        if (data.password1 !== data.password2) {
+            errorDiv.textContent = 'Passwords do not match.';
+            errorDiv.classList.remove('hidden');
+            return; // stop proses kalau password tidak cocok
+        }
+
+        try {
+          // kirim data ke server secara asynchronus menggunakan fetch
+            const response = await fetch("{% url 'main:register_ajax' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": csrftoken,
+                },
+                // ubah object javascript menjadi string json sebelum dikirim
+                body: JSON.stringify(data),
+            });
+
+            const responseData = await response.json();
+
+            if (responseData.status === 'success') {
+              // fungsi untuk menampilkan toast
+              showToast('Registration successful! Redirect...', 'success');
+
+              // tunggu selama 1.5 detik, baru redirect ke halaman utama
+              setTimeout(() => {
+                  window.location.href = "{% url 'main:show_main' %}";
+              }, 1500);
+            } else {
+                // show pesan error dari server kalau gagal
+                errorDiv.textContent = responseData.message;
+                errorDiv.classList.remove('hidden');
+            }
+        } catch (error) {
+            errorDiv.textContent = 'An unexpected error occurred. Please try again.';
+            errorDiv.classList.remove('hidden');
+        }
+    });
+</script>
 {% endblock content %}

@@ -16,13 +16,19 @@
       <p class="text-gray-600">Explore and experience more in Soccerholic!</p>
     </div>
 
+    <div class="mb-8">
+      <button onclick="showModal()" class="w-full block text-center bg-[#86AB89] hover:bg-opacity-90 text-white font-medium py-2.5 px-4 rounded-md transition">
+          + Add New Product
+      </button>
+    </div>
+
     <!-- Filter Section -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 bg-white rounded-lg border border-gray-200 p-4">
       <div class="flex space-x-3 mb-4 sm:mb-0">
-        <a href="?" class="{% if request.GET.filter == 'all' or not request.GET.filter  %} bg-[#86AB89] text-white{% else %}bg-white text-gray-700 border border-gray-300{% endif %} px-4 py-2 rounded-full font-medium transition-colors hover:bg-[#86AB89] hover:text-white">
+        <a id="filter-all" class="{% if request.GET.filter == 'all' or not request.GET.filter  %} bg-[#86AB89] text-white{% else %}bg-white text-gray-700 border border-gray-300{% endif %} px-4 py-2 rounded-full font-medium transition-colors hover:bg-[#86AB89] hover:text-white">
           All Product
         </a>
-        <a href="?filter=my" class="{% if request.GET.filter == 'my' %} bg-[#86AB89] text-white{% else %}bg-white text-gray-700 border border-gray-300{% endif %} px-4 py-2 rounded-full font-medium transition-colors hover:bg-[#86AB89] hover:text-white">
+        <a id="filter-my" class="{% if request.GET.filter == 'my' %} bg-[#86AB89] text-white{% else %}bg-white text-gray-700 border border-gray-300{% endif %} px-4 py-2 rounded-full font-medium transition-colors hover:bg-[#86AB89] hover:text-white">
           My Product
         </a>
       </div>
@@ -33,27 +39,250 @@
       {% endif %}
     </div>
 
+    {% comment %}
+      the Django 'if/else/for' logic has been removed. 
+      new divs are placeholders, all hidden by default. JavaScript will decide which one to show.
+    {% endcomment %}
 
+    <div id="loading" class="bg-white rounded-lg border border-gray-200 p-12 text-center hidden">
+      <svg class="animate-spin h-8 w-8 text-[#86AB89] inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+      </svg>
+      <p class="text-gray-600 mt-3">Loading products...</p>
+    </div>
 
-    <!-- News Grid -->
-    {% if not product_list %}
-      <div class="bg-white rounded-lg border border-gray-200 p-12 text-center">
-        <div class="w-32 h-32 mx-auto mb-4">
-          <img src="{% static 'image/no-product.png' %}" alt="No product available" class="w-full h-full object-contain">
-        </div>
-        <h3 class="text-lg font-medium text-gray-900 mb-2">No Product</h3>
-        <p class="text-gray-500 mb-6">Add your first product now!</p>
-        <a href="{% url 'main:add_product' %}" class="inline-flex items-center px-4 py-2 bg-[#86AB89] text-white rounded-md hover:bg-[#86AB89]-700 transition-colors">
-          Add Product
-        </a>
+    <div id="error" class="hidden"></div>
+
+    <div id="grid" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start md:items-stretch"></div>
+
+    <div id="empty" class="bg-white rounded-lg border border-gray-200 p-12 text-center hidden">
+      <div class="w-32 h-32 mx-auto mb-4">
+        <img src="{% static 'image/no-product.png' %}" alt="No product available" class="w-full h-full object-contain">
       </div>
-    {% else %}
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {% for product in product_list %}
-          {% include 'card_product.html' with product=product %}
-        {% endfor %}
-      </div>
-    {% endif %}
+      <h3 class="text-lg font-medium text-gray-900 mb-2">No Product</h3>
+      <p class="text-gray-500 mb-6">Add your first product now!</p>
+      <a href="{% url 'main:add_product' %}" class="inline-flex items-center px-4 py-2 bg-[#86AB89] text-white rounded-md hover:bg-opacity-80 transition-colors">
+        Add Product
+      </a>
+    </div>
+
   </div>
 </div>
+
+
+<!-- adding inline javascript -->
+<script>
+  // add event listener to detect new Product
+  document.addEventListener('productAdded', function() {
+      // refresh data without page reload -> ketika dia detect ada eve, fetchProductFro
+      fetchProductsFromServer();
+  });
+
+  document.addEventListener('productDeleted', function() {
+    fetchProductsFromServer();
+  });
+
+  // configure
+  const PRODUCT_API_ENDPOINT = "{% url 'main:show_json' %}";  // menyimpan URL endpoint API (tempat kita ambil data JSON)
+  const CURRENT_USER_ID = "{{ user.id|default_if_none:'' }}"; // menyimpan ID user yang lagi login -> ini nanti untuk filter my product
+
+  // dom elements
+  const loadingSpinner = document.getElementById('loading');
+  const errorMessage = document.getElementById('error');
+  const emptyStateDisplay = document.getElementById('empty');
+  const productsGridContainer = document.getElementById('grid');  
+  const showAllProductsButton = document.getElementById('filter-all');  
+  const showMyProductsButton = document.getElementById('filter-my');  
+
+  // variables
+  let activeFilter = 'all'; // flag pengingat filer apakah all atau my
+  let allProductsData = []; // ini sebagai cache agar kita ga perlu req ke server setiap mau filtering
+
+  // ----------------- functions --------------------
+  // update filter button 
+  function updateFilterButtonsAppearance() {
+    if (!showAllProductsButton || !showMyProductsButton) return;
+    
+    // menyimpan style tombol aktif dan tidak aktif
+    const activeClasses = 'bg-[#86AB89] text-white px-4 py-2 rounded-full font-medium transition-colors';
+    const inactiveClasses = 'bg-white text-gray-700 border border-gray-300 px-4 py-2 rounded-full font-medium transition-colors hover:bg-[#86AB89] hover:text-white';
+
+    if (activeFilter === 'all') {
+      showAllProductsButton.className = activeClasses;
+      showMyProductsButton.className = inactiveClasses;
+    } else {
+      showMyProductsButton.className = activeClasses;
+      showAllProductsButton.className = inactiveClasses;
+    }
+  }
+
+  // Show/hide page sections
+  function displayPageSection({ showLoading = false, showError = false, showEmpty = false, showGrid = false }) {
+    loadingSpinner.classList.toggle('hidden', !showLoading);
+    errorMessage.classList.toggle('hidden', !showError);
+    emptyStateDisplay.classList.toggle('hidden', !showEmpty);
+    productsGridContainer.classList.toggle('hidden', !showGrid);
+  }
+
+  // Get readable category name
+  function getReadableCategoryName(categoryCode) {
+    const categoryMapping = {
+      ball: 'Ball',
+      jersey: 'Jersey',
+      keychains: 'Keychains',
+      shoe: 'Shoe',
+    };
+    return categoryMapping[categoryCode] || categoryCode.charAt(0).toUpperCase() + categoryCode.slice(1);
+  }
+
+  function buildProductCardElement(productItem) {
+    const articleElement = document.createElement('article');
+    articleElement.className = 'bg-white rounded-lg border border-gray-200 hover:shadow-lg transition-shadow duration-300 overflow-hidden flex flex-col';
+
+    const detailLink = `{% url 'main:show_product' '00000000-0000-0000-0000-000000000000' %}`.replace('00000000-0000-0000-0000-000000000000', productItem.id);
+    const editLink = `{% url 'main:edit_product' '00000000-0000-0000-0000-000000000000' %}`.replace('00000000-0000-0000-0000-000000000000', productItem.id);
+    const deleteLink = `{% url 'main:delete_product' '00000000-0000-0000-0000-000000000000' %}`.replace('00000000-0000-0000-0000-000000000000', productItem.id);
+
+    const categoryLabel = DOMPurify.sanitize(getReadableCategoryName(productItem.category));
+    const isFeatured = productItem.is_featured;
+    const isLastStock = productItem.stock === 1;
+
+    const thumbnailHtml = productItem.thumbnail 
+      ? `<div class="p-4"><img src='${productItem.thumbnail}' alt='${productItem.name}' class='w-full h-40 object-contain rounded-lg'></div>` 
+      : `<div class='w-full h-48 bg-gray-200 flex items-center justify-center'><span class='text-gray-400'>No Image</span></div>`;
+
+    const featuredBadge = isFeatured 
+      ? `<span class='inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-100 text-yellow-800'>Featured</span>` 
+      : '';
+    
+    const lastStockBadge = isLastStock
+      ? `<span class='inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-100 text-yellow-800'>Last Stock!</span>`
+      : '';
+
+    let actionButtonsHtml = '';
+    if (CURRENT_USER_ID && Number(CURRENT_USER_ID) === Number(productItem.user_id)) {
+      actionButtonsHtml = `
+        <div class="flex items-center justify-between text-sm">
+          <span>Your product</span>
+          <div class="flex space-x-3">
+            <a href="${editLink}" class="font-medium text-gray-600 hover:text-gray-900">Edit</a>
+            <a href="javascript:void(0)" onclick="showDeleteModal('${productItem.id}')" class="font-medium text-red-600 hover:text-red-800">Delete</a>
+          </div>
+        </div>
+      `;
+    } else {
+      actionButtonsHtml = `
+        <div class="flex items-center space-x-3">
+          <button type="button" class="w-full border border-[#86AB89] text-[#86AB89] hover:bg-[#86AB89] hover:text-white font-medium text-sm py-2 px-4 rounded-md transition-colors">Add to Cart</button>
+          <button type="button" class="w-full bg-[#86AB89] hover:bg-opacity-80 text-white font-medium text-sm py-2 px-4 rounded-md transition-colors">Buy Now</button>
+        </div>
+      `;
+    }
+
+    const completeCardHtml = `
+      <div class="relative">
+      ${thumbnailHtml}
+      <div class="absolute top-3 left-3">
+        <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-[#86AB89] text-white">${categoryLabel}</span>
+      </div>
+      <div class="absolute top-3 right-3 flex space-x-2">
+        ${featuredBadge}
+        ${lastStockBadge}
+      </div>
+    </div>
+
+    <div class="p-5 pt-0 flex flex-col flex-grow">
+      
+      <div class="flex-grow">
+        <div class="flex items-center text-sm text-gray-500 mb-3">
+          <span>By: ${productItem.user_username || 'Anonymous'}</span>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-3 line-clamp-2 leading-tight h-14">
+          <a href="${detailLink}" class="hover:text-[#86AB89] transition-colors">${productItem.name}</a>
+        </h3>
+      </div>
+
+      <div class="pt-4 border-t border-gray-100">
+        ${actionButtonsHtml}
+      </div>
+
+    </div>
+  `;
+
+    articleElement.innerHTML = completeCardHtml;
+    return articleElement;
+  }
+
+  // Render all product cards
+  function renderAllProductCards(productItems) { 
+    productsGridContainer.innerHTML = '';
+    productItems.forEach(productItem => {
+      const cardElement = buildProductCardElement(productItem); 
+      productsGridContainer.appendChild(cardElement);
+    });
+  }
+
+  // Filter and display products
+  function filterAndDisplayProducts() { 
+    updateFilterButtonsAppearance();
+    
+    const filteredProducts = activeFilter === 'all'
+      ? allProductsData 
+      : allProductsData.filter(product => Number(product.user_id) === Number(CURRENT_USER_ID)); 
+    
+    if (filteredProducts.length === 0) { 
+      displayPageSection({ showEmpty: true });
+    } else {
+      renderAllProductCards(filteredProducts); 
+      displayPageSection({ showGrid: true });
+    }
+  }
+
+  // Fetch products data from server
+  async function fetchProductsFromServer() {  
+    try {
+      displayPageSection({ showLoading: true });
+      
+      const response = await fetch(PRODUCT_API_ENDPOINT, {
+        headers: { 'Accept': 'application/json' },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch products data from server');
+      }
+
+      const productsData = await response.json();  
+      allProductsData = productsData || [];  
+      
+      filterAndDisplayProducts();  
+    } catch (error) {
+      console.error('Error loading products:', error);  
+      displayPageSection({ showError: true });
+    }
+  }
+
+  // --- 5. Event Handlers ---
+  function handleShowAllProductsClick() {  
+    activeFilter = 'all';
+    filterAndDisplayProducts();  
+  }
+
+  function handleShowMyProductsClick() {  
+    activeFilter = 'my';
+    filterAndDisplayProducts();  
+  }
+
+  // --- 6. Initialize Page ---
+  function initializeProductsPage() {  
+    showAllProductsButton.addEventListener('click', handleShowAllProductsClick);
+    showMyProductsButton.addEventListener('click', handleShowMyProductsClick);
+    
+    fetchProductsFromServer();  
+  }
+
+  // Start application
+  initializeProductsPage(); // Nama diguhah
+</script>
+
 {% endblock content %}

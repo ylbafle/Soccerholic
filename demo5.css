@@ -1,0 +1,39 @@
+.judul {
+    margin:0;
+    color:white;
+    font-weight: bold;
+}
+
+.navbar {
+    background-color:rgb(231, 200, 160);
+    padding: 10px;
+    display: flex;
+    align-items: center; 
+    justify-content: space-between;
+}
+
+.kiri {
+    display: flex;
+    align-items: center;
+}
+
+.kanan {
+    color:rgb(0, 104, 97);
+}
+
+.kanan a{
+    color:rgb(0, 104, 97);
+    text-decoration: none;
+    margin: 2px;
+    
+}
+
+.kanan a:hover {
+    color: rgb(194, 72, 255);
+}
+
+.logo {
+    height: 40px;
+    width: 40px;
+    margin: 10px;
+}

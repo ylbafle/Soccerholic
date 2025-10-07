@@ -1,5 +1,25 @@
 Tautan PWS: https://cathlin-abigail-soccerholic.pbp.cs.ui.ac.id/
 ---------------------------------- TUGAS 5 ----------------------------------
+1. Perbedaan synchronus dan asynchronus request:
+    Synchronus: ketika browser kirim request ke server, ia harus berhenti dan wait sampe server kirim response sebelum dia bisa lanjut proses atau respon input pengguna
+    Asynchronus: browser melalui JavaScript dapat mengirim request ke server di latar belakang, while waiting for responser, browser ga berhenti kayak di synchronus, dia tetap bisa interact dengan halaman, misal user scroll atau clicking element.
+
+2. Bagaimana Ajax bekerja di Django:
+    Pertama, di frontend akan mendeteksi event, misal submit formregister. addEventListener akan menangkap event dan memanggil event.preventDefault agar full page reload atau merefresh halaman tidak dilakukan. Kemdian, http request dibuat, JavaScript mengumpulkan data dan membuat HTTP request menggunakan fetch API dengan menyertakan request method, headers (detail format data dan csrf token), dan body (data pengguna yang diubah jadi format string JSON).
+    Lalu di kita membuat url routing di urls.py. Ketika method di views.py misal (login_ajax) dipanggil, dia akan membaca rquest.body dan parse (json.loads) dan mengeksekusi codenya.
+    Setelah itu, view tidak render template HTML, ia hanya mengirimkan respons singkat dalam format JSON. JavaScript di file html bersangkutan akan menerima respons JSON ini.
+
+3. Keuntungan menggunakan Ajax dibandingkan dengan render biasa:
+    a. better UX: terasa lebih cepat, smooth, dan modern.
+    b. efisiensi: payload JSON lebih kecil dibandingkan dokumen HTML yang cenderung lebih berat dan dapat menambah beban server. Hal ini akan menghemat bandwidth.
+    c. fleksibilitas: endpoint JSON ang dibuat tidak terikat pada satu template HTML.
+
+4. Cara memastikan keamanan saat menggunakan AJAX untuk fitur login dan register:
+    a. proteksi csrf:
+        kita tetap menggunakan csrf token dalam form HTML yang akan dibaca oleh JacaScript melalui cookie, middleware django akan validate token ini.
+    b. menggunakan decorator @require_post:
+        decorator ini memastikan bahwa data sensitif hanya bisa dikirim melalui metode POST sehingga mencegah data kredensial bocor
+---------------------------------- TUGAS 5 ----------------------------------
 1. Jika terdapat beberapa CSS selector untuk suatu elemen HTML, jelaskan urutan prioritas pengambilan CSS selector tersebut!
     a. Inline style: langsung id dalam tag HTML dengan atribut style
     b. External dan internal style: external style, kita membuat kode css di file terpisah

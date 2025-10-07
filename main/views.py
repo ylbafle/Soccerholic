@@ -1,5 +1,6 @@
+import json
 from django.shortcuts import render, redirect, get_object_or_404
-from main.forms import CarForm, ProductForm
+from main.forms import ProductForm
 from main.models import Product
 from django.http import HttpResponse
 from django.core import serializers
@@ -8,8 +9,12 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required   # membatasi pengguna yang bisa membuka sutatu halaman
 import datetime
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+from django.utils.html import strip_tags
+from django.contrib.auth.models import User
 
 # Create your views here.
 @login_required(login_url='/login')   # jika user belum login maka tidak bisa lihat show_main dan akan diarahkan ke halaman login
@@ -32,6 +37,38 @@ def show_main(request):
     }
 
     return render(request, "main.html", context)
+
+# decorator memastikan view ini hanya bisa diakses via metode POST.
+@require_POST
+def add_product_ajax(request):
+    # Memeriksa apakah user sudah login. Jika belum, kirim response error.
+    if not request.user.is_authenticated:
+        return JsonResponse({"status": "fail", "message": "User not logged in"}, status=401)
+
+    # ambil data dari request.POST
+    name = strip_tags(request.POST.get("name")) 
+    description = strip_tags(request.POST.get("description"))
+    price = request.POST.get("price")
+    stock = request.POST.get("stock") 
+    category = request.POST.get("category")
+    thumbnail = request.POST.get("thumbnail")
+    is_featured = request.POST.get("is_featured") == 'on'
+    user = request.user
+
+    # buat objek Product baru
+    new_product = Product(
+        name=name, 
+        price=price,
+        stock=stock,
+        description=description,
+        category=category,
+        thumbnail=thumbnail,
+        is_featured=is_featured,
+        user=user
+    )
+    new_product.save()
+
+    return JsonResponse({"status": "success", "message": "Product added successfully"}, status=201)
 
 # fungsi untuk generate form untuk menambahkan data produk
 def add_product(request):
@@ -56,6 +93,31 @@ def show_product(request, id):
 
     return render(request, "product_details.html", context)
 
+@require_POST
+def login_ajax(request):
+    # ambil data JSON yang dikirim dari frontend
+    data = json.loads(request.body)
+    username = data.get("username")
+    password = data.get("password")
+
+    # authenticate user
+    user = authenticate(request, username=username, password=password)
+
+    if user is not None:
+        # jika autentikasi berhasil, user bisa login
+        login(request, user)
+        # kirim response sukses dalam format JSON
+        return JsonResponse({
+            "status": "success",
+            "message": "Login successful!"
+        })
+    else:
+        # kirim response error kalau gagal
+        return JsonResponse({
+            "status": "fail",
+            "message": "Invalid username or password."
+        }, status=401) # status 401 berarti "unauthorized"
+    
 def edit_product(request, id):
     product = get_object_or_404(Product, pk=id)
     form = ProductForm(request.POST or None, instance=product)
@@ -82,8 +144,22 @@ def show_xml(request):
 
 def show_json(request):
     product_list = Product.objects.all()
-    json_data = serializers.serialize("json", product_list)
-    return HttpResponse(json_data, content_type="application/json")
+    data = [
+        {
+            'id': str(product.id),
+            'name': product.name,
+            'description': product.description,
+            'category': product.category,
+            'thumbnail': product.thumbnail,
+            'stock': product.stock,
+            'is_featured': product.is_featured,
+            'user_id': product.user_id,
+            'user_username': product.user.username if product.user else None,
+        }
+        for product in product_list
+    ]
+
+    return JsonResponse(data, safe=False)   #  mengirimkan data dalam format JSON ke client, safe=False karena data yang dikirin berupa list, bukan dictionary
 
 def show_xml_by_id(request, product_id):
    try:
@@ -94,13 +170,22 @@ def show_xml_by_id(request, product_id):
        return HttpResponse(status=404)
 
 def show_json_by_id(request, product_id):
-   try:
-       item = Product.objects.get(pk=product_id)
-       json_data = serializers.serialize("json", [item])
-       return HttpResponse(json_data, content_type="application/json")
-   except Product.DoesNotExist:
-       return HttpResponse(status=404)
-   
+    try:
+        product = Product.objects.select_related('user').get(pk=product_id)
+        data = {
+            'id': str(product.id),
+            'name': product.name,
+            'description': product.description,
+            'category': product.category,
+            'thumbnail': product.thumbnail,
+            'stock': product.stock,
+            'is_featured': product.is_featured,
+            'user_id': product.user_id,
+        }
+        return JsonResponse(data)
+    except Product.DoesNotExist:
+       return JsonResponse({'detail': 'Not found'}, status=404)
+
 def register(request):
     # membuat akun user baru
     form = UserCreationForm()
@@ -113,6 +198,35 @@ def register(request):
             return redirect('main:login')   # redirect setelah berhasil register (ke halaman login)
     context = {'form':form}
     return render(request, 'register.html', context)
+
+@require_POST
+def register_ajax(request):
+    # ambil data mentah format json dari body request
+    data = json.loads(request.body)
+    # ekstrak setiap field dari data json
+    username = data.get('username')
+    password = data.get('password1')
+    password2 = data.get('password2')
+
+    # validasi di sisi server: pastikan kedua password cocok
+    if password != password2:
+        return JsonResponse({'status': 'fail', 'message': 'passwords do not match.'}, status=400)
+
+    # cek apakah username sudah terdaftar di database
+    if User.objects.filter(username=username).exists():
+        return JsonResponse({'status': 'fail', 'message': 'username already taken.'}, status=400)
+
+    # jika semua validasi lolos, proses pembuatan user baru
+    try:
+        # buat user baru dengan username dan password yang diberikan
+        new_user = User.objects.create_user(username=username, password=password)
+        # setelah user berhasil dibuat, langsung loginkan mereka ke dalam sesi
+        login(request, new_user)
+        # kirim response json yang menandakan registrasi berhasil
+        return JsonResponse({'status': 'success', 'message': 'registration successful!'})
+    except Exception as e:
+        # tangani jika ada error lain yang tak terduga saat membuat user
+        return JsonResponse({'status': 'fail', 'message': str(e)}, status=400)
 
 def login_user(request):
     # kalau user submit form login (setelah isi data di form)
@@ -137,6 +251,19 @@ def logout_user(request):
     response = HttpResponseRedirect(reverse('main:login'))
     response.delete_cookie('last_login')    # menghapus cookie last_login dari daftar cookies di response
     return response
+
+@require_POST
+def delete_product_ajax(request, id):
+    try:
+        product = Product.objects.get(pk=id)
+        # pastikan hanya pemilik produk yang bisa delete
+        if request.user == product.user:
+            product.delete()
+            return JsonResponse({"status": "success", "message": "Product deleted successfully."})
+        else:
+            return JsonResponse({"status": "fail", "message": "You are not authorized to delete this product."}, status=403)
+    except Product.DoesNotExist:
+        return JsonResponse({"status": "fail", "message": "Product not found."}, status=404)
 
 # demo1
 # def add_employee(request):
