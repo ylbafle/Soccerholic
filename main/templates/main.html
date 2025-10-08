@@ -16,9 +16,13 @@
       <p class="text-gray-600">Explore and experience more in Soccerholic!</p>
     </div>
 
-    <div class="mb-8">
+    <div class="mb-8 grid grid-cols-2 gap-4">
       <button onclick="showModal()" class="w-full block text-center bg-[#86AB89] hover:bg-opacity-90 text-white font-medium py-2.5 px-4 rounded-md transition">
           + Add New Product
+      </button>
+
+      <button id="refresh-products-button" class="w-full block text-center bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-2.5 px-4 rounded-md transition">
+          Refresh Products
       </button>
     </div>
 
@@ -71,11 +75,18 @@
 </div>
 
 
+{% include 'delete_modal.html' %}
+{% include 'edit_modal.html' %}
+
 <!-- adding inline javascript -->
 <script>
   // add event listener to detect new Product
   document.addEventListener('productAdded', function() {
       // refresh data without page reload -> ketika dia detect ada eve, fetchProductFro
+      fetchProductsFromServer();
+  });
+
+  document.addEventListener('productEdited', function() {
       fetchProductsFromServer();
   });
 
@@ -94,6 +105,7 @@
   const productsGridContainer = document.getElementById('grid');  
   const showAllProductsButton = document.getElementById('filter-all');  
   const showMyProductsButton = document.getElementById('filter-my');  
+  const refreshButton = document.getElementById('refresh-products-button');
 
   // variables
   let activeFilter = 'all'; // flag pengingat filer apakah all atau my
@@ -141,7 +153,7 @@
     articleElement.className = 'bg-white rounded-lg border border-gray-200 hover:shadow-lg transition-shadow duration-300 overflow-hidden flex flex-col';
 
     const detailLink = `{% url 'main:show_product' '00000000-0000-0000-0000-000000000000' %}`.replace('00000000-0000-0000-0000-000000000000', productItem.id);
-    const editLink = `{% url 'main:edit_product' '00000000-0000-0000-0000-000000000000' %}`.replace('00000000-0000-0000-0000-000000000000', productItem.id);
+    const editUrl = `{% url 'main:edit_product_ajax' '00000000-0000-0000-0000-000000000000' %}`.replace('00000000-0000-0000-0000-000000000000', productItem.id);
     const deleteLink = `{% url 'main:delete_product' '00000000-0000-0000-0000-000000000000' %}`.replace('00000000-0000-0000-0000-000000000000', productItem.id);
 
     const categoryLabel = DOMPurify.sanitize(getReadableCategoryName(productItem.category));
@@ -166,7 +178,7 @@
         <div class="flex items-center justify-between text-sm">
           <span>Your product</span>
           <div class="flex space-x-3">
-            <a href="${editLink}" class="font-medium text-gray-600 hover:text-gray-900">Edit</a>
+            <a href="javascript:void(0)" onclick="showEditModal('${productItem.id}')" class="font-medium text-gray-600 hover:text-gray-900">Edit</a>
             <a href="javascript:void(0)" onclick="showDeleteModal('${productItem.id}')" class="font-medium text-red-600 hover:text-red-800">Delete</a>
           </div>
         </div>
@@ -214,7 +226,30 @@
     return articleElement;
   }
 
-  // Render all product cards
+  const editModal = document.getElementById('editModal');
+  const editForm = document.getElementById('editProductForm');
+
+  function hideEditModal() {
+    editModal.classList.add('hidden');
+  }
+
+  async function showEditModal(productId) {
+    // get the product's current data from the server
+    const response = await fetch(`{% url 'main:show_json_by_id' '0' %}`.replace('0', productId));
+    const product = await response.json();
+
+    document.getElementById('edit-product-id').value = product.id;
+    document.getElementById('edit-name').value = product.name;
+    document.getElementById('edit-stock').value = product.stock;
+    document.getElementById('edit-price').value = product.price;
+    document.getElementById('edit-description').value = product.description;
+    document.getElementById('edit-thumbnail').value = product.thumbnail;
+    document.getElementById('edit-category').value = product.category;
+    document.getElementById('edit-is_featured').checked = product.is_featured;
+    
+    editModal.classList.remove('hidden');
+  }
+
   function renderAllProductCards(productItems) { 
     productsGridContainer.innerHTML = '';
     productItems.forEach(productItem => {
@@ -223,8 +258,7 @@
     });
   }
 
-  // Filter and display products
-  function filterAndDisplayProducts() { 
+    function filterAndDisplayProducts() { 
     updateFilterButtonsAppearance();
     
     const filteredProducts = activeFilter === 'all'
@@ -262,6 +296,8 @@
     }
   }
 
+  
+
   // --- 5. Event Handlers ---
   function handleShowAllProductsClick() {  
     activeFilter = 'all';
@@ -273,10 +309,44 @@
     filterAndDisplayProducts();  
   }
 
+  editForm.addEventListener('submit', async (e) => {
+    e.preventDefault(); // Stop the default browser form submission
+
+    const productId = document.getElementById('edit-product-id').value;
+    const url = `{% url 'main:edit_product_ajax' '00000000-0000-0000-0000-000000000000' %}`.replace('00000000-0000-0000-0000-000000000000', productId);
+    const formData = new FormData(editForm);
+    const csrftoken = getCookie('csrftoken'); // Assuming getCookie is defined elsewhere
+
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        body: formData,
+        headers: { "X-CSRFToken": csrftoken },
+      });
+
+      const result = await response.json();
+
+      if (result.status === 'success') {
+        hideEditModal();
+        showToast('Product updated successfully.', 'success'); // Assuming you have a showToast function
+        document.dispatchEvent(new CustomEvent('productEdited')); // Signal a refresh
+      } else {
+        // You could optionally display form errors here
+        showToast('Error updating product.', 'error');
+        console.error('Validation errors:', result.errors);
+      }
+    } catch (error) {
+      console.error('Submission error:', error);
+      showToast('An unexpected error occurred.', 'error');
+    }
+  });
+
+
   // --- 6. Initialize Page ---
   function initializeProductsPage() {  
     showAllProductsButton.addEventListener('click', handleShowAllProductsClick);
     showMyProductsButton.addEventListener('click', handleShowMyProductsClick);
+    refreshButton.addEventListener('click', fetchProductsFromServer);
     
     fetchProductsFromServer();  
   }

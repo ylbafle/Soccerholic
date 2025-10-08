@@ -19,6 +19,13 @@ Tautan PWS: https://cathlin-abigail-soccerholic.pbp.cs.ui.ac.id/
         kita tetap menggunakan csrf token dalam form HTML yang akan dibaca oleh JacaScript melalui cookie, middleware django akan validate token ini.
     b. menggunakan decorator @require_post:
         decorator ini memastikan bahwa data sensitif hanya bisa dikirim melalui metode POST sehingga mencegah data kredensial bocor
+
+5. Bagaimana AJAX mempengaruhi UX pada web?
+    AJAX menghilangkan kebutuhan untuk mereload seluruh halaman setiap pengguna melalukan tindakan.
+    a. menghilangkan page reload yang mengganggu -> setiap klik link atau button, akan memicu page reload atau refresh, proses ini membuat web terasa lambat tanpa AJAX
+    Dengan AJAX, hanya bagian halaman tertentu yang diperbarui tanpa perlu mereload seluruh halaman, hal ini bisa terjadi dengan menggunakan JavaScript
+    b. interaktif
+    AJAX membuat web menjadi lebih interaktif karena fiturnya yang dinamis dan kompleks, contohnya toast sebagai notifikasi cepat sehingga tidak perlu pindah halaman
 ---------------------------------- TUGAS 5 ----------------------------------
 1. Jika terdapat beberapa CSS selector untuk suatu elemen HTML, jelaskan urutan prioritas pengambilan CSS selector tersebut!
     a. Inline style: langsung id dalam tag HTML dengan atribut style
