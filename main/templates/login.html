@@ -113,7 +113,7 @@
         const data = Object.fromEntries(formData.entries());
 
         try {
-            // 3. kirim data ke server via fetch
+            // kirim data ke server via fetch
             const response = await fetch("{% url 'main:login_ajax' %}", {
                 method: "POST",
                 headers: {
@@ -131,7 +131,7 @@
               errorDiv.classList.add('hidden');
 
               // success toast notification -> login berhasil
-              showToast('Login successful! Redirecting...', 'success'); // Assuming you have a showToast function
+              showToast('Login successful! Redirecting...', 'success'); 
 
               // 3. wait 1.5 seconds, lalu redirect ke halaman utama
               setTimeout(() => {

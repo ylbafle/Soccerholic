@@ -16,7 +16,7 @@
 
     <div class="px-6 py-4 space-y-4 form-style">
       <form id="productForm">
-        <input type="hidden" id="productId" name="productId"> <div class="mb-4">
+          {% csrf_token %} <input type="hidden" id="productId" name="productId"> <div class="mb-4">
           <label for="name" class="block text-sm font-medium text-gray-700">Product Name</label>
           <input type="text" id="name" name="name" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2" placeholder="e.g., Adidas Predator" required>
         </div>
@@ -67,7 +67,7 @@
 <script>
     // menampilkan modal dengan animasi fade in dan scale up
     function showModal() {
-        // Menggunakan id="productModal" yang sesuai dengan HTML Anda
+        // id="productModal" yang sesuai dengan HTML 
         const modal = document.getElementById('productModal');
         const modalContent = document.getElementById('productModalContent');
 
@@ -80,7 +80,7 @@
 
     // menyembunyikan modal dengan animasi fade out dan scale down -> dipanggil di cancel dan delet
     function hideModal() {
-        // Menggunakan id="productModal" yang sesuai dengan HTML Anda
+        // id="productModal" yang sesuai dengan HTML 
         const modal = document.getElementById('productModal');
         const modalContent = document.getElementById('productModalContent');
 
@@ -112,7 +112,7 @@
         return false;
     }
 
-    document.getElementById("newsForm").addEventListener("submit", function(e) {
+    document.getElementById("productForm").addEventListener("submit", function(e) {
         e.preventDefault();
         addProduct();
     })
