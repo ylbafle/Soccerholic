@@ -16,7 +16,7 @@
 </div>
 
 <script>
-  // Variabel untuk menyimpan ID produk yang akan dihapus
+  // untuk simpan id product to be deleted
   let productIdToDelete = null;
 
   function showDeleteModal(productId) {
@@ -33,17 +33,31 @@
   document.getElementById('confirmDeleteButton').addEventListener('click', async () => {
     if (!productIdToDelete) return;
 
-    // ambil url delete dari django dan ganti placeholder-nya
+    // ambil csrf token
+    const csrftoken = getCookie('csrftoken');
     const deleteUrl = `{% url 'main:delete_product_ajax' '00000000-0000-0000-0000-000000000000' %}`.replace('00000000-0000-0000-0000-000000000000', productIdToDelete);
-    const csrftoken = getCookie('csrftoken'); // Asumsi getCookie sudah ada di script lain
 
-    await fetch(deleteUrl, {
-      method: "POST",
-      headers: { "X-CSRFToken": csrftoken },
-    });
+    try {
+      const response = await fetch(deleteUrl, {
+        method: "POST",
+        headers: { "X-CSRFToken": csrftoken },
+      });
 
-    hideDeleteModal();
-    showToast('Product has been deleted.', 'success'); // Tampilkan toast
-    document.dispatchEvent(new CustomEvent('productDeleted')); // Kirim sinyal
+      const result = await response.json();
+
+      if (result.status === 'success') {
+        showToast('Product has been deleted.', 'success'); // toast
+        document.dispatchEvent(new CustomEvent('productDeleted')); // kirim sinyal
+      } else {
+        // error jika server gagal menghapus
+        showToast(result.message || 'Failed to delete product.', 'error');
+      }
+
+    } catch (error) {
+      console.error('Delete error:', error);
+      showToast('An error occurred. Please try again.', 'error');
+    } finally {
+      hideDeleteModal();
+    }
   });
 </script>

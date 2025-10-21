@@ -164,6 +164,7 @@ def show_json(request):
         {
             'id': str(product.id),
             'name': product.name,
+            'price': product.price,
             'description': product.description,
             'category': product.category,
             'thumbnail': product.thumbnail,
@@ -191,12 +192,13 @@ def show_json_by_id(request, product_id):
         data = {
             'id': str(product.id),
             'name': product.name,
+            'price': product.price,
             'description': product.description,
             'category': product.category,
             'thumbnail': product.thumbnail,
             'stock': product.stock,
             'is_featured': product.is_featured,
-            'user_id': product.user_id,
+            'user_id': product.user_id,'user_username': product.user.username if product.user else 'Toko No Name'
         }
         return JsonResponse(data)
     except Product.DoesNotExist:

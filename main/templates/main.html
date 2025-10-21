@@ -85,9 +85,25 @@
 
 {% include 'delete_modal.html' %}
 {% include 'edit_modal.html' %}
+{% include 'detail_modal.html' %}
 
 <!-- adding inline javascript -->
 <script>
+  function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+          const cookies = document.cookie.split(';');
+          for (let i = 0; i < cookies.length; i++) {
+              const cookie = cookies[i].trim();
+              if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                  cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                  break;
+              }
+          }
+      }
+      return cookieValue;
+  }
+  
   // add event listener to detect new Product
   document.addEventListener('productAdded', function() {
       // refresh data without page reload -> ketika dia detect ada eve, fetchProductFro
@@ -168,6 +184,12 @@
     const isFeatured = productItem.is_featured;
     const isLastStock = productItem.stock === 1;
 
+    const formattedPrice = new Intl.NumberFormat('id-ID', { 
+      style: 'currency', 
+      currency: 'IDR',
+      minimumFractionDigits: 0 
+    }).format(productItem.price);
+
     const thumbnailHtml = productItem.thumbnail 
       ? `<div class="p-4"><img src='${productItem.thumbnail}' alt='${productItem.name}' class='w-full h-40 object-contain rounded-lg'></div>` 
       : `<div class='w-full h-48 bg-gray-200 flex items-center justify-center'><span class='text-gray-400'>No Image</span></div>`;
@@ -202,25 +224,30 @@
 
     const completeCardHtml = `
       <div class="relative">
-      ${thumbnailHtml}
-      <div class="absolute top-3 left-3">
-        <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-[#86AB89] text-white">${categoryLabel}</span>
+        ${thumbnailHtml}
+        <div class="absolute top-3 left-3">
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-[#86AB89] text-white">${categoryLabel}</span>
+        </div>
+        <div class="absolute top-3 right-3 flex space-x-2">
+          ${featuredBadge}
+          ${lastStockBadge}
+        </div>
       </div>
-      <div class="absolute top-3 right-3 flex space-x-2">
-        ${featuredBadge}
-        ${lastStockBadge}
-      </div>
-    </div>
 
-    <div class="p-5 pt-0 flex flex-col flex-grow">
+      <div class="p-5 pt-0 flex flex-col flex-grow">
       
       <div class="flex-grow">
         <div class="flex items-center text-sm text-gray-500 mb-3">
-          <span>By: ${productItem.user_username || 'Anonymous'}</span>
+          <span>Stock: ${productItem.stock}</span>
         </div>
-        <h3 class="text-lg font-semibold text-gray-900 mb-3 line-clamp-2 leading-tight h-14">
-          <a href="${detailLink}" class="hover:text-[#86AB89] transition-colors">${productItem.name}</a>
+
+        <h3 class="text-lg font-semibold text-gray-900 mb-2 line-clamp-2 leading-tight">
+          <a href="javascript:void(0)" onclick="showDetailModal('${productItem.id}')" class="cursor-pointer hover:text-[#86AB89] transition-colors">${productItem.name}</a>
         </h3>
+
+        <div class="mb-3">
+          <span class="text-xl font-semibold text-[#86AB89]">${formattedPrice}</span>
+        </div>
       </div>
 
       <div class="pt-4 border-t border-gray-100">
@@ -256,6 +283,34 @@
     document.getElementById('edit-is_featured').checked = product.is_featured;
     
     editModal.classList.remove('hidden');
+  }
+
+  const detailModal = document.getElementById('detailModal');
+
+  function hideDetailModal() {
+    detailModal.classList.add('hidden');
+  }
+
+  async function showDetailModal(productId) {
+    const response = await fetch(`{% url 'main:show_json_by_id' '0' %}`.replace('0', productId));
+    const product = await response.json();
+
+    // format data
+    const formattedPrice = new Intl.NumberFormat('id-ID', { 
+      style: 'currency', 
+      currency: 'IDR',
+      minimumFractionDigits: 0 
+    }).format(product.price);
+    
+    // get data untuk jadi elemen modal
+    document.getElementById('detail-name').textContent = product.name;
+    document.getElementById('detail-price').textContent = formattedPrice;
+    document.getElementById('detail-stock').textContent = `Stock: ${product.stock}`;
+    document.getElementById('detail-description').textContent = product.description || "No description available.";
+    document.getElementById('detail-shop').textContent = product.user_username || "Toko No Name";
+    
+    //  show modalnya
+    detailModal.classList.remove('hidden');
   }
 
   function renderAllProductCards(productItems) { 
