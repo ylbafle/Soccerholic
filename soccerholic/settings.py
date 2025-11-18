@@ -32,7 +32,14 @@ PRODUCTION = os.getenv('PRODUCTION', 'False').lower() == 'true'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "cathlin-abigail-soccerholic.pbp.cs.ui.ac.id"]      # mengizinkan akses dari host lokal
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SAMESITE = 'None'
+
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "cathlin-abigail-soccerholic.pbp.cs.ui.ac.id", "10.0.2.2"]      # mengizinkan akses dari host lokal
 
 CSRF_TRUSTED_ORIGINS = [
     "https://cathlin-abigail-soccerholic.pbp.cs.ui.ac.id"
@@ -47,7 +54,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'main'
+    'main',
+    'authentication',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -59,6 +68,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware'
 ]
 
 ROOT_URLCONF = 'soccerholic.urls'

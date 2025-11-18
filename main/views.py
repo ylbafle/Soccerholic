@@ -15,6 +15,9 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.utils.html import strip_tags
 from django.contrib.auth.models import User
+import requests
+import json
+from django.http import JsonResponse
 
 # Create your views here.
 @login_required(login_url='/login')   # jika user belum login maka tidak bisa lihat show_main dan akan diarahkan ke halaman login
@@ -283,6 +286,53 @@ def delete_product_ajax(request, id):
     except Product.DoesNotExist:
         return JsonResponse({"status": "fail", "message": "Product not found."}, status=404)
 
+def proxy_image(request):
+    image_url = request.GET.get('url')
+    if not image_url:
+        return HttpResponse('No URL provided', status=400)
+    
+    try:
+        # Fetch image from external source
+        response = requests.get(image_url, timeout=10)
+        response.raise_for_status()
+        
+        # Return the image with proper content type
+        return HttpResponse(
+            response.content,
+            content_type=response.headers.get('Content-Type', 'image/jpeg')
+        )
+    except requests.RequestException as e:
+        return HttpResponse(f'Error fetching image: {str(e)}', status=500)
+    
+@csrf_exempt
+def create_news_flutter(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        name = strip_tags(data.get("name", ""))  # Strip HTML tags
+        description = strip_tags(data.get("description", ""))  # Strip HTML tags
+        stock = data.get("stock", 0)
+        price = data.get("price", 0)
+        category = data.get("category", "")
+        thumbnail = data.get("thumbnail", "")
+        is_featured = data.get("is_featured", False)
+        user = request.user
+        
+        new_product = Product(
+            name=name, 
+            description=description,
+            stock=stock,
+            price=price,
+            category=category,
+            thumbnail=thumbnail,
+            is_featured=is_featured,
+            user=user
+        )
+        new_product.save()
+        
+        return JsonResponse({"status": "success"}, status=200)
+    else:
+        return JsonResponse({"status": "error"}, status=401)
+    
 # demo1
 # def add_employee(request):
 #    employee1 = Employee.objects.create(name = "cathlin", age = 19, persona = "-")
